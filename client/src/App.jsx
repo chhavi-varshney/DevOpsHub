@@ -8,6 +8,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Organizations from "./pages/Organizations";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import Projects from "./pages/Projects";
 
 function App() {
   return (
@@ -53,6 +54,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            }
+          />
       </Routes>
     </>
   );

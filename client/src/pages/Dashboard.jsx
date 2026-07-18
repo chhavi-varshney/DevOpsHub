@@ -1,9 +1,36 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import toast from "react-hot-toast";
+import api from "../services/api";
 function Dashboard() {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const [stats, setStats] = useState({
+  organizations: 0,
+  projects: 0,
+  tasks: 0,
+  users: 0,
+});
+
+  const fetchDashboard = async () => {
+  try {
+    const [orgRes, projectRes] = await Promise.all([
+      api.get("/organizations"),
+      api.get("/projects"),
+    ]);
+
+    setStats({
+      organizations: orgRes.data.organizations.length,
+      projects: projectRes.data.projects.length,
+      tasks: 0,
+      users: 0,
+    });
+  } catch (error) {
+    toast.error("Failed to load dashboard");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -11,6 +38,11 @@ function Dashboard() {
 
     navigate("/");
   };
+
+
+  useEffect(() => {
+  fetchDashboard();
+}, []);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-10">
@@ -61,6 +93,54 @@ function Dashboard() {
           </div>
 
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+
+          <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
+            <h3 className="text-gray-400">Organizations</h3>
+            <p className="text-4xl font-bold text-blue-400 mt-3">
+              {stats.organizations}
+            </p>
+          </div>
+
+          <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
+            <h3 className="text-gray-400">Projects</h3>
+            <p className="text-4xl font-bold text-green-400 mt-3">
+              {stats.projects}
+            </p>
+          </div>
+
+          <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
+            <h3 className="text-gray-400">Tasks</h3>
+            <p className="text-4xl font-bold text-yellow-400 mt-3">
+              {stats.tasks}
+            </p>
+          </div>
+
+          <div className="bg-slate-900 p-6 rounded-xl border border-slate-800">
+            <h3 className="text-gray-400">Users</h3>
+            <p className="text-4xl font-bold text-pink-400 mt-3">
+              {stats.users}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-8 flex gap-4">
+  <button
+    onClick={() => navigate("/organizations")}
+    className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold"
+  >
+    Organizations
+  </button>
+
+  <button
+    onClick={() => navigate("/projects")}
+    className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold"
+  >
+    Projects
+  </button>
+</div>
 
       </div>
     </div>
