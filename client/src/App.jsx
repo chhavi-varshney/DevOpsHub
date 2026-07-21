@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Organizations from "./pages/Organizations";
+import Tasks from "./pages/Tasks";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Projects from "./pages/Projects";
@@ -60,6 +61,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Projects />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
               </ProtectedRoute>
             }
           />
