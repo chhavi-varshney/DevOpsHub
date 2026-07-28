@@ -7,6 +7,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Organizations from "./pages/Organizations";
 import Tasks from "./pages/Tasks";
+import Issues from "./pages/Issues";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Projects from "./pages/Projects";
@@ -72,6 +73,14 @@ function App() {
                 <Tasks />
               </ProtectedRoute>
             }
+          />
+
+          <Route 
+          path="/issues" 
+          element={
+          <ProtectedRoute>
+            <Issues />
+          </ProtectedRoute>} 
           />
       </Routes>
     </>

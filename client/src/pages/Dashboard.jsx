@@ -278,7 +278,7 @@ function Dashboard() {
     Quick Actions
   </h2>
 
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
     <button
       onClick={() => navigate("/tasks")}
@@ -318,6 +318,19 @@ function Dashboard() {
         View and manage organizations.
       </p>
     </button>
+
+    <button
+  onClick={() => navigate("/issues")}
+  className="bg-slate-900 border border-slate-800 hover:border-red-500 rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left"
+>
+  <h3 className="text-xl font-semibold text-red-400">
+    Issue Tracker
+  </h3>
+
+  <p className="text-gray-400 mt-2">
+    Create, manage and resolve project issues.
+  </p>
+</button>
 
   </div>
 </div>
