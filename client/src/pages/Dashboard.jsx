@@ -327,8 +327,23 @@ function Dashboard() {
     Issue Tracker
   </h3>
 
+  
+
   <p className="text-gray-400 mt-2">
     Create, manage and resolve project issues.
+  </p>
+</button>
+
+<button
+  onClick={() => navigate("/chat")}
+  className="bg-slate-900 border border-slate-800 hover:border-cyan-500 rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left"
+>
+  <h3 className="text-xl font-semibold text-cyan-400">
+    💬 Team Chat
+  </h3>
+
+  <p className="text-gray-400 mt-2">
+    Chat with your team in real time.
   </p>
 </button>
 

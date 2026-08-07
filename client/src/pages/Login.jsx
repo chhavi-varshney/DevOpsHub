@@ -5,6 +5,7 @@ import Logo from "../components/Logo";
 import Input from "../components/Input";
 import { validateLogin } from "../utils/validation";
 import api from "../services/api";
+import socket from "../services/socket";
 
 function Login() {
   const navigate = useNavigate();
@@ -44,7 +45,25 @@ function Login() {
       // Save User
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      setMessage(res.data.message);
+      // Connect Socket
+      socket.connect();
+
+      socket.connect();
+
+socket.on("connect", () => {
+  console.log("✅ Socket Connected:", socket.id);
+});
+
+socket.on("connect_error", (err) => {
+  console.log("❌ Socket Error:", err.message);
+});
+
+socket.emit("join", res.data.user._id);
+
+      // Join User
+      socket.emit("join", res.data.user._id);
+
+setMessage(res.data.message);
 
       // Redirect after 1 second
       setTimeout(() => {
