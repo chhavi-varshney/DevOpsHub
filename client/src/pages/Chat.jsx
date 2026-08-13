@@ -6,6 +6,7 @@ import {
 } from "../services/messageService";
 import socket from "../services/socket";
 
+
 const Chat = () => {
   const [recentChats, setRecentChats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,8 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState("");
 
   const fetchRecentChats = async () => {
     try {
@@ -28,31 +31,35 @@ const Chat = () => {
     }
   };
 
-  const openConversation = async (chat) => {
-    try {
-      setSelectedUser(chat);
+const openConversation = async (chat) => {
+  try {
+    console.log("Selected Chat:", chat);
 
-      const data = await getConversation(chat._id);
+    setSelectedUser(chat);
 
-      setMessages(data || []);
-    } catch (error) {
-      console.error("Failed to fetch conversation:", error);
-    }
-  };
-  const handleSendMessage = async () => {
+    const data = await getConversation(chat._id);
+
+    console.log("Conversation Data:", data);
+
+    setMessages(data || []);
+  } catch (error) {
+    console.error("Failed to fetch conversation:", error);
+  }
+};
+const handleSendMessage = async () => {
   if (!message.trim() || !selectedUser) return;
 
   try {
     const newMessage = await sendMessage({
       receiver: selectedUser._id,
-      message,
+      message: message.trim(),
       image: "",
     });
 
-    // Add message to UI
+    // Show sender's own message immediately
     setMessages((prev) => [...prev, newMessage]);
 
-    // Realtime emit
+    // Send realtime message
     socket.emit("send-message", {
       receiverId: selectedUser._id,
       message: newMessage,
@@ -60,14 +67,73 @@ const Chat = () => {
 
     // Clear input
     setMessage("");
+
+    // Update recent chats
+    await fetchRecentChats();
   } catch (error) {
     console.error("Failed to send message:", error);
   }
 };
 
-  useEffect(() => {
+  
+
+ useEffect(() => {
+  fetchRecentChats();
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user) {
+    socket.emit("join", user._id);
+    console.log("🟢 Joined socket as:", user._id);
+  }
+
+  const handleReceiveMessage = (newMessage) => {
+    console.log("🔴 RECEIVE MESSAGE:", newMessage);
+
+    setMessages((prev) => {
+      console.log("Old messages:", prev);
+      console.log("Adding realtime message:", newMessage);
+
+      return [...prev, newMessage];
+    });
+
     fetchRecentChats();
-  }, []);
+  };
+
+  socket.on("receive-message", handleReceiveMessage);
+
+  const handleTyping = ({ senderName }) => {
+      setTypingUser(senderName);
+      setTyping(true);
+    };
+
+    const handleStopTyping = () => {
+      setTyping(false);
+      setTypingUser("");
+    };
+
+    socket.on("typing", handleTyping);
+    socket.on("stop-typing", handleStopTyping);
+      return () => {
+        socket.off("receive-message", handleReceiveMessage);
+        socket.off("typing", handleTyping);
+        socket.off("stop-typing", handleStopTyping);
+  };
+}, []);
+
+    useEffect(() => {
+  const handleReceiveMessage = (newMessage) => {
+    console.log("📩 New Message Received:", newMessage);
+
+    setMessages((prev) => [...prev, newMessage]);
+  };
+
+  socket.on("receive-message", handleReceiveMessage);
+
+  return () => {
+    socket.off("receive-message", handleReceiveMessage);
+  };
+}, []);
 
   return (
     <div className="h-screen bg-[#0B1020] flex text-white">
@@ -96,25 +162,34 @@ const Chat = () => {
               No Chats Yet
             </p>
           ) : (
-            recentChats.map((chat) => (
+            recentChats.map((chat) => {
+            const currentUser = JSON.parse(localStorage.getItem("user"));
+
+            const otherUser =
+              chat.sender._id === currentUser.id
+                ? chat.receiver
+                : chat.sender;
+
+            return (
               <div
                 key={chat._id}
-                onClick={() => openConversation(chat)}
+                onClick={() => openConversation(otherUser)}
                 className={`p-4 border-b border-gray-800 cursor-pointer transition ${
-                  selectedUser?._id === chat._id
+                  selectedUser?._id === otherUser._id
                     ? "bg-cyan-700"
                     : "hover:bg-[#1F2937]"
                 }`}
               >
                 <h3 className="font-semibold">
-                  {chat.name}
+                  {otherUser.name}
                 </h3>
 
                 <p className="text-sm text-gray-400 truncate">
-                  {chat.lastMessage || "No messages"}
+                  {chat.message}
                 </p>
               </div>
-            ))
+              );
+})
           )}
 
         </div>
@@ -153,8 +228,8 @@ const Chat = () => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   const isMine =
-    msg.sender === currentUser?._id ||
-    msg.sender?._id === currentUser?._id;
+  msg.sender === currentUser?.id ||
+  msg.sender?._id === currentUser?.id;
 
   return (
     <div
@@ -186,7 +261,26 @@ const Chat = () => {
             type="text"
             placeholder="Type a message..."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+
+              setMessage(value);
+
+              if (!selectedUser) return;
+
+              const currentUser = JSON.parse(localStorage.getItem("user"));
+
+              if (value.trim()) {
+                socket.emit("typing", {
+                  receiverId: selectedUser._id,
+                  senderName: currentUser?.name,
+                });
+              } else {
+                socket.emit("stop-typing", {
+                  receiverId: selectedUser._id,
+                });
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleSendMessage();
