@@ -5,53 +5,100 @@ const initializeSocket = (io) => {
     console.log("User Connected:", socket.id);
 
     // ==========================
-    // Join User
+    // JOIN USER
     // ==========================
     socket.on("join", (userId) => {
+      if (!userId) return;
+
       users[userId] = socket.id;
 
       console.log(`User ${userId} joined`);
 
+      // Send current online users
       io.emit("online-users", Object.keys(users));
     });
 
     // ==========================
-    // Send Message
+    // SEND MESSAGE
     // ==========================
-    socket.on("send-message", ({ receiverId, message }) => {
-      const receiverSocketId = users[receiverId];
+    socket.on(
+      "send-message",
+      ({ receiverId, message }) => {
+        if (!receiverId || !message) return;
 
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("receive-message", message);
+        const receiverSocketId = users[receiverId];
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "receive-message",
+            message
+          );
+        }
       }
-    });
+    );
 
     // ==========================
-    // Typing
+    // TYPING
     // ==========================
-    socket.on("typing", ({ receiverId, senderName }) => {
-      const receiverSocketId = users[receiverId];
+    socket.on(
+      "typing",
+      ({ receiverId, senderName }) => {
+        if (!receiverId) return;
 
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("typing", {
-          senderName,
-        });
+        const receiverSocketId = users[receiverId];
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "typing",
+            {
+              senderName,
+            }
+          );
+        }
       }
-    });
+    );
 
     // ==========================
-    // Stop Typing
+    // STOP TYPING
     // ==========================
-    socket.on("stop-typing", ({ receiverId }) => {
-      const receiverSocketId = users[receiverId];
+    socket.on(
+      "stop-typing",
+      ({ receiverId }) => {
+        if (!receiverId) return;
 
-      if (receiverSocketId) {
-        io.to(receiverSocketId).emit("stop-typing");
+        const receiverSocketId = users[receiverId];
+
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit(
+            "stop-typing"
+          );
+        }
       }
-    });
+    );
 
     // ==========================
-    // Disconnect
+    // MESSAGES SEEN
+    // ==========================
+    socket.on(
+      "messages-seen",
+      ({ senderId }) => {
+        if (!senderId) return;
+
+        const senderSocketId = users[senderId];
+
+        if (senderSocketId) {
+          io.to(senderSocketId).emit(
+            "messages-seen",
+            {
+              senderId,
+            }
+          );
+        }
+      }
+    );
+
+    // ==========================
+    // DISCONNECT
     // ==========================
     socket.on("disconnect", () => {
       for (const userId in users) {
@@ -61,9 +108,16 @@ const initializeSocket = (io) => {
         }
       }
 
-      console.log("User Disconnected:", socket.id);
+      console.log(
+        "User Disconnected:",
+        socket.id
+      );
 
-      io.emit("online-users", Object.keys(users));
+      // Update online users
+      io.emit(
+        "online-users",
+        Object.keys(users)
+      );
     });
   });
 };

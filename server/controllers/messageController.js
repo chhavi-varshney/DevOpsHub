@@ -1,15 +1,30 @@
 import Message from "../models/Message.js";
 
 // Send Message
+// Send Message
 export const sendMessage = async (req, res) => {
   try {
-    const { receiver, message, image } = req.body;
+    const {
+      receiver,
+      message,
+      image,
+    } = req.body;
+
+    if (
+      !receiver ||
+      (!message?.trim() && !image)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Message or image is required",
+      });
+    }
 
     const newMessage = await Message.create({
       sender: req.user.id,
       receiver,
-      message,
-      image,
+      message: message?.trim() || "",
+      image: image || "",
     });
 
     res.status(201).json({
@@ -23,7 +38,6 @@ export const sendMessage = async (req, res) => {
     });
   }
 };
-
 // Get Conversation
 export const getConversation = async (req, res) => {
   try {
