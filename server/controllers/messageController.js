@@ -1,5 +1,6 @@
 import Message from "../models/Message.js";
-
+import User from "../models/User.js";
+import { createNotification } from "../services/notificationService.js";
 // Send Message
 // Send Message
 export const sendMessage = async (req, res) => {
@@ -26,6 +27,40 @@ export const sendMessage = async (req, res) => {
       message: message?.trim() || "",
       image: image || "",
     });
+
+    // Mention notification
+// Mention notification
+if (message) {
+  const mentionMatches = message.match(/@([a-zA-Z0-9_]+)/g);
+
+  if (mentionMatches) {
+    const senderUser = await User.findById(req.user.id);
+
+    for (const mention of mentionMatches) {
+      const mentionedName = mention.substring(1);
+
+      const mentionedUser = await User.findOne({
+        name: {
+          $regex: `^${mentionedName}$`,
+          $options: "i",
+        },
+      });
+
+      if (
+        mentionedUser &&
+        mentionedUser._id.toString() !== req.user.id.toString()
+      ) {
+        await createNotification({
+          recipient: mentionedUser._id,
+          sender: req.user.id,
+          type: "MENTION",
+          message: `${senderUser?.name || "Someone"} mentioned you in a message`,
+          relatedId: newMessage._id,
+        });
+      }
+    }
+  }
+}
 
     res.status(201).json({
       success: true,

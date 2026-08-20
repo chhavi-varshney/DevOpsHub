@@ -14,6 +14,8 @@ import issueRoutes from "./routes/issueRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import initializeSocket from "./sockets/socket.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import sprintRoutes from "./routes/sprintRoutes.js";
 
 
 dotenv.config();
@@ -48,6 +50,8 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/issues", issueRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/sprints", sprintRoutes);
 
 app.get("/", (req, res) => {
   res.send("DevOpsHub Backend Running");

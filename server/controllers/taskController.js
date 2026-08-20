@@ -1,5 +1,6 @@
 import Task from "../models/Task.js";
 import Project from "../models/Project.js";
+import { createNotification } from "../services/notificationService.js";
 
 // Create Task
 export const createTask = async (req, res) => {
@@ -43,6 +44,17 @@ export const createTask = async (req, res) => {
       assignedTo,
       createdBy: req.user.id,
     });
+
+    // Create notification if task is assigned
+if (assignedTo) {
+  await createNotification({
+    recipient: assignedTo,
+    sender: req.user.id,
+    type: "TASK_ASSIGNED",
+    message: `You have been assigned a new task: ${title}`,
+    relatedId: task._id,
+  });
+}
 
     res.status(201).json({
       success: true,
@@ -98,6 +110,7 @@ export const updateTask = async (req, res) => {
     } = req.body;
 
     const task = await Task.findById(id);
+    
 
     if (!task) {
       return res.status(404).json({
@@ -105,7 +118,7 @@ export const updateTask = async (req, res) => {
         message: "Task not found",
       });
     }
-
+    const previousAssignedTo = task.assignedTo?.toString();
     task.title = title ?? task.title;
     task.description = description ?? task.description;
     task.status = status ?? task.status;
@@ -114,6 +127,20 @@ export const updateTask = async (req, res) => {
     task.assignedTo = assignedTo ?? task.assignedTo;
 
     await task.save();
+    // Notify when task is assigned to a new user
+    if (
+      assignedTo &&
+      assignedTo !== previousAssignedTo
+    ) {
+      await createNotification({
+        recipient: assignedTo,
+        sender: req.user.id,
+        type: "TASK_ASSIGNED",
+        message: `You have been assigned a new task: ${task.title}`,
+        relatedId: task._id,
+      });
+    }
+    
 
     const updatedTask = await Task.findById(task._id)
       .populate("project", "name")

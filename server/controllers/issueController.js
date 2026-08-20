@@ -1,4 +1,5 @@
 import Issue from "../models/Issue.js";
+import { createNotification } from "../services/notificationService.js";
 
 // Create Issue
 export const createIssue = async (req, res) => {
@@ -7,6 +8,16 @@ export const createIssue = async (req, res) => {
       ...req.body,
       reporter: req.user.id,
     });
+    // Create notification if issue is assigned
+    if (issue.assignedTo) {
+      await createNotification({
+        recipient: issue.assignedTo,
+        sender: req.user.id,
+        type: "BUG_ASSIGNED",
+        message: `You have been assigned a new bug: ${issue.title}`,
+        relatedId: issue._id,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -97,21 +108,36 @@ export const getIssueById = async (req, res) => {
 };
 
 // Update Issue
+// Update Issue
 export const updateIssue = async (req, res) => {
   try {
-    const issue = await Issue.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
       return res.status(404).json({
         success: false,
         message: "Issue not found",
+      });
+    }
+
+    const previousAssignedTo = issue.assignedTo?.toString();
+
+    // Update issue fields
+    Object.assign(issue, req.body);
+
+    await issue.save();
+
+    // Notify when bug is assigned to a new user
+    if (
+      issue.assignedTo &&
+      issue.assignedTo.toString() !== previousAssignedTo
+    ) {
+      await createNotification({
+        recipient: issue.assignedTo,
+        sender: req.user.id,
+        type: "BUG_ASSIGNED",
+        message: `You have been assigned a new bug: ${issue.title}`,
+        relatedId: issue._id,
       });
     }
 
@@ -122,13 +148,13 @@ export const updateIssue = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       success: false,
       message: "Failed to update issue",
     });
   }
 };
-
 // Delete Issue
 export const deleteIssue = async (req, res) => {
   try {
