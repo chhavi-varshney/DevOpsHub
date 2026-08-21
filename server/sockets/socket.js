@@ -1,6 +1,21 @@
 const users = {};
 
+let ioInstance = null;
+
+export const notifyUser = (userId, notification) => {
+  if (!ioInstance || !userId) return;
+
+  const socketId = users[userId.toString()];
+
+  if (socketId) {
+    ioInstance.to(socketId).emit(
+      "new-notification",
+      notification
+    );
+  }
+};
 const initializeSocket = (io) => {
+  ioInstance = io;
   io.on("connection", (socket) => {
     console.log("User Connected:", socket.id);
 

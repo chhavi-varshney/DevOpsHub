@@ -1,4 +1,5 @@
 import Notification from "../models/Notification.js";
+import { notifyUser } from "../sockets/socket.js";
 
 export const createNotification = async ({
   recipient,
@@ -15,6 +16,9 @@ export const createNotification = async ({
       message,
       relatedId,
     });
+
+    // Send notification in real-time through Socket.io
+    notifyUser(notification.recipient, notification);
 
     return notification;
   } catch (error) {

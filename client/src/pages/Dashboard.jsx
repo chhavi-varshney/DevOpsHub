@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../services/api";
+import NotificationBell from "../components/NotificationBell";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -74,9 +75,12 @@ function Dashboard() {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
-          <h1 className="text-4xl font-bold text-blue-500">
-            DevOpsHub Dashboard
-          </h1>
+        <h1 className="text-4xl font-bold text-blue-500">
+          DevOpsHub Dashboard
+        </h1>
+
+        <div className="flex items-center gap-4">
+          <NotificationBell />
 
           <button
             onClick={handleLogout}
@@ -85,6 +89,7 @@ function Dashboard() {
             Logout
           </button>
         </div>
+      </div>
 
         {/* Welcome Card */}
         <div className="bg-slate-900 rounded-xl p-8 border border-slate-800">

@@ -4,7 +4,7 @@ import Notification from "../models/Notification.js";
 export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
-      recipient: req.user._id,
+      recipient: req.user.id,
     })
       .populate("sender", "name avatar")
       .sort({ createdAt: -1 });
@@ -29,7 +29,7 @@ export const markAsRead = async (req, res) => {
     const notification = await Notification.findOneAndUpdate(
       {
         _id: req.params.id,
-        recipient: req.user._id,
+        recipient: req.user.id,
       },
       {
         isRead: true,
@@ -66,7 +66,7 @@ export const markAllAsRead = async (req, res) => {
   try {
     await Notification.updateMany(
       {
-        recipient: req.user._id,
+        recipient: req.user.id,
         isRead: false,
       },
       {
@@ -93,7 +93,7 @@ export const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findOneAndDelete({
       _id: req.params.id,
-      recipient: req.user._id,
+      recipient: req.user.id,
     });
 
     if (!notification) {
