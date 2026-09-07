@@ -352,6 +352,19 @@ function Dashboard() {
   </p>
 </button>
 
+<button
+  onClick={() => navigate("/github")}
+  className="bg-slate-900 border border-slate-800 hover:border-purple-500 rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left"
+>
+  <h3 className="text-xl font-semibold text-purple-400">
+    🐙 GitHub
+  </h3>
+
+  <p className="text-gray-400 mt-2">
+    View repositories, commits, pull requests and issues.
+  </p>
+</button>
+
   </div>
 </div>
                   

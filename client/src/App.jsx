@@ -12,6 +12,7 @@ import Issues from "./pages/Issues";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Projects from "./pages/Projects";
 import Chat from "./pages/Chat";
+import GitHub from "./pages/GitHub";
 
 function App() {
   return (
@@ -89,6 +90,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/github"
+            element={
+              <ProtectedRoute>
+                <GitHub />
               </ProtectedRoute>
             }
           />
