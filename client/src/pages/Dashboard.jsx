@@ -365,6 +365,19 @@ function Dashboard() {
   </p>
 </button>
 
+<button
+  onClick={() => navigate("/analytics")}
+  className="bg-slate-900 border border-slate-800 hover:border-blue-500 rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-left"
+>
+  <h3 className="text-xl font-semibold text-blue-400">
+    📊 Analytics
+  </h3>
+
+  <p className="text-gray-400 mt-2">
+    View tasks, commits, sprints, bugs and deployment analytics.
+  </p>
+</button>
+
   </div>
 </div>
                   

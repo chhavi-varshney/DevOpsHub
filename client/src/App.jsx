@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Projects from "./pages/Projects";
 import Chat from "./pages/Chat";
 import GitHub from "./pages/GitHub";
+import Analytics from "./pages/Analytics";
 
 function App() {
   return (
@@ -99,6 +100,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <GitHub />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
               </ProtectedRoute>
             }
           />

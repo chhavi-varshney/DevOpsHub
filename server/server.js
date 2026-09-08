@@ -17,6 +17,7 @@ import messageRoutes from "./routes/messageRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import sprintRoutes from "./routes/sprintRoutes.js";
 import githubRoutes from "./routes/githubRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 
 dotenv.config();
@@ -54,6 +55,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/sprints", sprintRoutes);
 app.use("/api/github", githubRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 app.get("/", (req, res) => {
   res.send("DevOpsHub Backend Running");

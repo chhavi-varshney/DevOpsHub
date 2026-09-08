@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import GitHubTabs from "../components/github/GitHubTabs";
+import GitHubOverview from "../components/github/GitHubOverview";
+import GitHubCommits from "../components/github/GitHubCommits";
+import GitHubPullRequests from "../components/github/GitHubPullRequests";
+import GitHubIssues from "../components/github/GitHubIssues";
 
 import {
   connectGitHub,
@@ -20,6 +25,7 @@ const GitHub = () => {
   const [pullRequests, setPullRequests] = useState([]);
   const [issues, setIssues] = useState([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Load GitHub repositories and stats
   const loadGitHubData = async () => {
@@ -68,6 +74,7 @@ const GitHub = () => {
   // Load selected repository details
   const handleRepositoryClick = async (repo) => {
     try {
+      setActiveTab("overview");
       setSelectedRepo(repo);
 
       // Smooth scroll to repository details
@@ -150,7 +157,15 @@ const GitHub = () => {
             </p>
           </div>
 
-          {!connected && (
+          {connected ? (
+            <div className="flex items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/10 px-5 py-3">
+              <span className="h-3 w-3 rounded-full bg-green-400"></span>
+
+              <span className="font-semibold text-green-400">
+                GitHub Connected
+              </span>
+            </div>
+          ) : (
             <button
               onClick={handleConnectGitHub}
               className="rounded-lg bg-gray-800 px-5 py-3 font-semibold transition hover:bg-gray-700"
@@ -307,151 +322,46 @@ const GitHub = () => {
                       setCommits([]);
                       setPullRequests([]);
                       setIssues([]);
+                      setActiveTab("overview");
                     }}
                     className="rounded-lg bg-gray-800 px-4 py-2 text-sm transition hover:bg-gray-700"
                   >
                     Close
                   </button>
                 </div>
+                <GitHubTabs
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                />
 
                 {/* Details Loading */}
                 {detailsLoading ? (
+                  
                   <div className="py-8 text-center text-gray-400">
                     Loading repository details...
                   </div>
                 ) : (
                   <>
-                    {/* Detail Stats */}
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                   {activeTab === "overview" && (
+                    <GitHubOverview
+                      selectedRepo={selectedRepo}
+                      commits={commits}
+                      pullRequests={pullRequests}
+                      issues={issues}
+                    />
+                  )}
 
-                      {/* Commits */}
-                      <div className="rounded-lg border border-slate-800 p-5">
-                        <p className="text-gray-400">
-                          Commits
-                        </p>
+                  {activeTab === "commits" && (
+                    <GitHubCommits commits={commits} />
+                  )}
 
-                        <h3 className="mt-2 text-3xl font-bold text-green-400">
-                          {commits.length}
-                        </h3>
-                      </div>
+                  {activeTab === "pullRequests" && (
+                    <GitHubPullRequests pullRequests={pullRequests} />
+                  )}
 
-                      {/* Pull Requests */}
-                      <div className="rounded-lg border border-slate-800 p-5">
-                        <p className="text-gray-400">
-                          Pull Requests
-                        </p>
-
-                        <h3 className="mt-2 text-3xl font-bold text-purple-400">
-                          {pullRequests.length}
-                        </h3>
-                      </div>
-
-                      {/* Issues */}
-                      <div className="rounded-lg border border-slate-800 p-5">
-                        <p className="text-gray-400">
-                          Open Issues
-                        </p>
-
-                        <h3 className="mt-2 text-3xl font-bold text-red-400">
-                          {issues.length}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Commits Preview */}
-                    <div className="mt-8">
-                      <h3 className="mb-4 text-xl font-semibold text-green-400">
-                        Recent Commits
-                      </h3>
-
-                      {commits.length === 0 ? (
-                        <p className="text-gray-500">
-                          No commits found.
-                        </p>
-                      ) : (
-                        <div className="space-y-3">
-                          {commits.slice(0, 5).map((commit) => (
-                            <div
-                              key={commit.sha}
-                              className="rounded-lg border border-slate-800 p-4"
-                            >
-                              <p className="font-medium">
-                                {commit.commit?.message ||
-                                  "No commit message"}
-                              </p>
-
-                              <p className="mt-1 text-sm text-gray-500">
-                                {commit.commit?.author?.name ||
-                                  "Unknown author"}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Pull Requests Preview */}
-                    <div className="mt-8">
-                      <h3 className="mb-4 text-xl font-semibold text-purple-400">
-                        Pull Requests
-                      </h3>
-
-                      {pullRequests.length === 0 ? (
-                        <p className="text-gray-500">
-                          No pull requests found.
-                        </p>
-                      ) : (
-                        <div className="space-y-3">
-                          {pullRequests.slice(0, 5).map((pr) => (
-                            <div
-                              key={pr.id}
-                              className="rounded-lg border border-slate-800 p-4"
-                            >
-                              <p className="font-medium">
-                                #{pr.number} {pr.title}
-                              </p>
-
-                              <p className="mt-1 text-sm text-gray-500">
-                                State: {pr.state}
-                                {pr.merged_at
-                                  ? " • Merged"
-                                  : ""}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Issues Preview */}
-                    <div className="mt-8">
-                      <h3 className="mb-4 text-xl font-semibold text-red-400">
-                        Open Issues
-                      </h3>
-
-                      {issues.length === 0 ? (
-                        <p className="text-gray-500">
-                          No open issues found.
-                        </p>
-                      ) : (
-                        <div className="space-y-3">
-                          {issues.slice(0, 5).map((issue) => (
-                            <div
-                              key={issue.id}
-                              className="rounded-lg border border-slate-800 p-4"
-                            >
-                              <p className="font-medium">
-                                #{issue.number} {issue.title}
-                              </p>
-
-                              <p className="mt-1 text-sm text-gray-500">
-                                State: {issue.state}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                  {activeTab === "issues" && (
+                    <GitHubIssues issues={issues} />
+                  )}
                   </>
                 )}
               </div>
